@@ -8,11 +8,20 @@ hermetically from this repo's contents — what you review is what runs.
 ## Quick start
 
 ```bash
-# run on a TPU v6e VM
+# run on a TPU v6e VM — FINAL kernel (this repo's pinned submodule, default)
 docker run --rm --privileged --net=host -v $(pwd)/out:/out \
   ghcr.io/junyi-99/kda-tpu-bench:latest grid       # 56-point S×B grid × 3 impls
+
+# BASELINE kernel (upstream sglang-jax main, pinned e6e47830) — same modes
+docker run --rm --privileged --net=host -e KDA_KERNEL=baseline -v $(pwd)/out:/out \
+  ghcr.io/junyi-99/kda-tpu-bench:latest grid
 # other modes: correctness / micro / extras / sharegpt / lengths / all / shell
 ```
+
+`KDA_KERNEL=baseline|final` selects the kernel under test. Note: upstream main
+has already merged the safe_gate MXU port, so baseline-vs-final isolates the
+**structural** optimizations (fusion / unified addressing / flat grid /
+head-block + interleaving) of PR #4.
 
 Results are written to `/root/*.json` inside the container and copied to
 `/out` when mounted.
