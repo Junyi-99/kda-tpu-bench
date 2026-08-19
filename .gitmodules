@@ -1,0 +1,3 @@
+[submodule "sglang-jax"]
+	path = sglang-jax
+	url = https://github.com/Junyi-99/sglang-jax.git

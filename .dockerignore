@@ -1,0 +1,5 @@
+.git
+.github
+**/.git
+**/__pycache__
+out/
