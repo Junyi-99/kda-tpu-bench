@@ -8,7 +8,8 @@ hermetically from this repo's contents — what you review is what runs.
 ## Quick start
 
 ```bash
-# no TPU needed — correctness matrix in Pallas interpret mode
+# correctness matrix in Pallas interpret mode — no TPU needed, but requires a
+# real x86-64 host with AVX (jaxlib does not start under Apple-Silicon emulation)
 docker run --rm ghcr.io/junyi-99/kda-tpu-bench:latest correctness
 
 # on a TPU v6e VM
@@ -48,5 +49,5 @@ sglang-jax/   pinned kernel submodule
 Python 3.12 · `jax[tpu]==0.10.2` · BF16 (fp32 accumulation in strip-GEMMs) ·
 Kimi-K3 per-chip geometry `H=24, K=V=128, chunk=64, lower_bound=-5`.
 
-> Note: the GHCR package must be set to public (or grant this repo Actions
-> access under package settings) for CI pushes and anonymous pulls.
+> Validated on TPU v6e: in-container benchmark results match native (non-Docker)
+> runs within measurement noise — the container adds no measurable overhead.
