@@ -78,6 +78,39 @@ PY
     PY=$PY SGL=/root/sglang-jax bash /root/bench/e2e_serving.sh "$E2E_MODEL" "${E2E_TAG:-run}" $E2E_SERVER_ARGS
     collect
     ;;
+  serve)
+    # 只起官方 server（模型 preset 或路径），前台阻塞，供外部自行压测
+    shift || true
+    bash /root/bench/serve_model.sh "${MODEL:-mini-k3}" "$@"
+    echo ">>> server stays up; press Ctrl-C to stop"
+    tail -f /root/server.log
+    ;;
+  bench-serving)
+    # 官方 sgl_jax.bench_serving 入口：起 server（MODEL=preset|path）后透传所有参数
+    shift || true
+    bash /root/bench/serve_model.sh "${MODEL:-mini-k3}" $SERVER_ARGS
+    [ -f /root/sharegpt.json ] || curl -sL -o /root/sharegpt.json "$SG_URL"
+    ARGS="$*"
+    [ -n "$ARGS" ] || ARGS="--dataset-name sharegpt --dataset-path /root/sharegpt.json --num-prompts 160 --max-concurrency 32 --request-rate inf --warmup-requests 8 --output-details"
+    case "$ARGS" in *--dataset-path*) ;; *--dataset-name\ sharegpt*) ARGS="$ARGS --dataset-path /root/sharegpt.json";; esac
+    ( cd /root/sglang-jax && $PY -m sgl_jax.bench_serving --backend sgl-jax \
+        --host 127.0.0.1 --port ${PORT:-30040} $ARGS \
+        --output-file /root/bench_serving_${MODEL:-mini-k3}${KDA_FORCE_BASELINE:+_baseline}.jsonl \
+        2>&1 | tail -50 | tee /root/bench_serving_${MODEL:-mini-k3}${KDA_FORCE_BASELINE:+_baseline}.log )
+    pkill -f "sgl_jax.launch_server" 2>/dev/null || true
+    collect
+    ;;
+  run-eval)
+    # 官方 run_eval.py（正确性，默认 gsm8k）
+    shift || true
+    bash /root/bench/serve_model.sh "${MODEL:-kimi-linear-48b}" $SERVER_ARGS
+    ARGS="$*"
+    [ -n "$ARGS" ] || ARGS="--eval-name gsm8k --num-examples 200"
+    ( cd /root/sglang-jax/test/srt && $PY run_eval.py --host 127.0.0.1 --port ${PORT:-30040} $ARGS \
+        2>&1 | tail -10 | tee /root/run_eval_${MODEL:-kimi-linear-48b}.log )
+    pkill -f "sgl_jax.launch_server" 2>/dev/null || true
+    collect
+    ;;
   shell) exec /bin/bash ;;
   *)
     cat <<'USAGE'
@@ -92,6 +125,15 @@ modes:
   sharegpt      ShareGPT replay bench（需 TPU；自动先跑 lengths）
   selftest      CPU 冒烟：kda 包导入 + 开关签名（CI 用）
   e2e           端到端 serving A/B（E2E_MODEL=模型目录；ours vs KDA_FORCE_BASELINE=1）
+  serve         只起官方 server（MODEL=kimi-linear-48b|mini-k3|mini-k3-half|<path>）
+  bench-serving 官方 sgl_jax.bench_serving（起 server 后透传参数；MODEL= 同上）
+  run-eval      官方 run_eval.py 正确性评测（默认 gsm8k 200 题）
+
+模型 preset（MODEL=）：
+  kimi-linear-48b  真权重，从 GCS model-cache 拉取（~92GB -> /dev/shm）
+  mini-k3          K3 几何 12 层（9 KDA + 3 MLA），dummy 权重
+  mini-k3-half     K3 几何 24 层（18 KDA + 6 MLA），dummy 权重
+  <任意路径>       直接使用
 
 环境变量 KDA_KERNEL=baseline|final（默认 final）切换被测内核：
   baseline = 上游 sglang-jax main 的原始 kernel（含已合并的 safe_gate MXU port）

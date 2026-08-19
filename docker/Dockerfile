@@ -26,6 +26,7 @@ RUN mkdir -p /root/venv-sgl/bin && ln -s /usr/local/bin/python /root/venv-sgl/bi
 COPY kernels/baseline/ /root/kernels/baseline/
 RUN cp -r /root/sglang-jax/python/sgl_jax/srt/kernels/kda /root/kernels/final
 
+COPY models/ /root/models/
 COPY bench/ /root/bench/
 COPY docker/reproduce.sh /root/reproduce.sh
 RUN chmod +x /root/reproduce.sh

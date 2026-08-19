@@ -26,6 +26,43 @@ head-block + interleaving) of PR #4.
 Results are written to `/root/*.json` inside the container and copied to
 `/out` when mounted.
 
+
+## Official sglang-jax benchmarks (full model)
+
+The image also wraps sglang-jax's own tools, so you can drive the official
+`bench_serving` / `run_eval` against either model with one command. `MODEL=`
+takes a preset (`kimi-linear-48b`, `mini-k3`, `mini-k3-half`) or any path;
+presets prepare the model dir themselves (GCS weights for 48B, geometry-faithful
+dummy config for mini-K3).
+
+```bash
+# official bench_serving, sharegpt defaults (160 prompts / concurrency 32)
+docker run --rm --privileged --net=host -e MODEL=kimi-linear-48b \
+  -v $(pwd)/out:/out ghcr.io/junyi-99/kda-tpu-bench:latest bench-serving
+
+# same, upstream KDA path — the A/B baseline
+docker run --rm --privileged --net=host -e MODEL=kimi-linear-48b \
+  -e KDA_FORCE_BASELINE=1 -v $(pwd)/out:/out \
+  ghcr.io/junyi-99/kda-tpu-bench:latest bench-serving
+
+# any bench_serving flags pass straight through
+docker run --rm --privileged --net=host -e MODEL=mini-k3 \
+  -v $(pwd)/out:/out ghcr.io/junyi-99/kda-tpu-bench:latest \
+  bench-serving --dataset-name random --random-input-len 4096 \
+    --random-output-len 128 --num-prompts 64 --max-concurrency 16
+
+# correctness (official run_eval.py)
+docker run --rm --privileged --net=host -e MODEL=kimi-linear-48b \
+  -v $(pwd)/out:/out ghcr.io/junyi-99/kda-tpu-bench:latest run-eval
+
+# just the server, drive it yourself from the host
+docker run --rm --privileged --net=host -e MODEL=mini-k3 \
+  ghcr.io/junyi-99/kda-tpu-bench:latest serve
+```
+
+Extra `launch_server` flags go in `SERVER_ARGS`, e.g.
+`-e SERVER_ARGS="--max-prefill-tokens 2048 --chunked-prefill-size 2048 --max-running-requests 32"`.
+
 ## What each mode measures
 
 | Mode | Measurement |
@@ -38,6 +75,9 @@ Results are written to `/root/*.json` inside the container and copied to
 | `sharegpt` | 7 B configs × 100 seed-0 replay batches × 3 impls |
 
 | `e2e` | end-to-end serving A/B on a full model (`E2E_MODEL=<dir>`): ours vs `KDA_FORCE_BASELINE=1` |
+| `bench-serving` | official `sgl_jax.bench_serving` against a `MODEL=` preset or path |
+| `run-eval` | official `run_eval.py` correctness (gsm8k by default) |
+| `serve` | launch the official server only, and leave it up |
 
 Published results: kernel-level in `results/`, full-model serving (Kimi-Linear-48B
 and mini-K3, with trace attribution) in [`results/e2e/`](results/e2e/README.md),
