@@ -19,6 +19,14 @@ _SGL = next(p for p in (os.path.expanduser("~/sglang-jax/python"),
             if os.path.isdir(p))
 sys.path.insert(0, _SGL)
 import sgl_jax.srt.kernels.kda.kda as kda
+import inspect as _insp
+_SUP = set(_insp.signature(kda.chunk_kda_fwd).parameters)
+IS_FINAL_KERNEL = "head_block" in _SUP
+_RAW_CKF = kda.chunk_kda_fwd
+def _ckf(*a, **kw):
+    return _RAW_CKF(*a, **{k: v for k, v in kw.items() if k in _SUP})
+kda.chunk_kda_fwd = _ckf
+
 
 H, K, V, BT, LB = 24, 128, 128, 64, -5.0
 SCALE = K**-0.5
@@ -84,6 +92,8 @@ LADDER = [
     ("+flat",     dict(sg=True, fuse=True,  uni=True,  flat=True,  hb=False)),
     ("+hb",       dict(sg=True, fuse=True,  uni=True,  flat=True,  hb=True)),
 ]
+if not IS_FINAL_KERNEL:
+    LADDER = [("baseline_kernel", dict(sg=True, fuse=False, uni=False, flat=False, hb=False))]
 for S, B in ((32, 1), (1024, 64)):
     init = f32(B, H, K, V) * 0.1
     rows = {}

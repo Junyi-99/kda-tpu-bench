@@ -24,6 +24,14 @@ _SGL = next(p for p in (os.path.expanduser("~/sglang-jax/python"),
             if os.path.isdir(p))
 sys.path.insert(0, _SGL)
 import sgl_jax.srt.kernels.kda.kda as kda
+import inspect as _insp
+_SUP = set(_insp.signature(kda.chunk_kda_fwd).parameters)
+IS_FINAL_KERNEL = "head_block" in _SUP
+_RAW_CKF = kda.chunk_kda_fwd
+def _ckf(*a, **kw):
+    return _RAW_CKF(*a, **{k: v for k, v in kw.items() if k in _SUP})
+kda.chunk_kda_fwd = _ckf
+
 
 H, K, V, BT, LB = 24, 128, 128, 64, -5.0
 SCALE = K**-0.5
@@ -35,6 +43,8 @@ IMPLS = {
     "mxu_port":  dict(sg=True,  fuse=False, uni=False, flat=False, hb=False),
     "optimized": dict(sg=True,  fuse=True,  uni=True,  flat=True,  hb=True),
 }
+if not IS_FINAL_KERNEL:
+    IMPLS = {"baseline_kernel": dict(sg=True, fuse=False, uni=False, flat=False, hb=False)}
 rng = np.random.RandomState(0)
 f32 = lambda *s: jnp.asarray(rng.randn(*s), dtype=jnp.float32)
 l2 = lambda x: x / jnp.linalg.norm(x, axis=-1, keepdims=True)
@@ -87,6 +97,10 @@ for S in S_SET:
                 row[name] = {"error": str(e)[:150]}
         results["grid"][f"S{S}_B{B}"] = row
         o, m, p = (row.get(n, {}).get("median_ms") for n in ("original", "mxu_port", "optimized"))
+        if not IS_FINAL_KERNEL:
+            b = row.get("baseline_kernel", {}).get("median_ms")
+            print(f"S={S:>5} B={B:>2}: baseline_kernel {b if b else -1:8.3f} ms", flush=True)
+            continue
         if o and p:
             print(f"S={S:>5} B={B:>2}: orig {o:8.3f}  mxu {m:8.3f}  opt {p:8.3f} ms  "
                   f"| mxu {o/m:4.2f}x  full {o/p:5.2f}x", flush=True)

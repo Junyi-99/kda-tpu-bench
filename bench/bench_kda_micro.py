@@ -23,6 +23,14 @@ _SGL = next(p for p in (os.path.expanduser("~/sglang-jax/python"),
             if os.path.isdir(p))
 sys.path.insert(0, _SGL)
 import sgl_jax.srt.kernels.kda.kda as kda
+import inspect as _insp
+_SUP = set(_insp.signature(kda.chunk_kda_fwd).parameters)
+IS_FINAL_KERNEL = "head_block" in _SUP
+_RAW_CKF = kda.chunk_kda_fwd
+def _ckf(*a, **kw):
+    return _RAW_CKF(*a, **{k: v for k, v in kw.items() if k in _SUP})
+kda.chunk_kda_fwd = _ckf
+
 
 import sgl_jax.srt.kernels.kda.naive as naive
 

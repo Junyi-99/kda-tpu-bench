@@ -22,6 +22,10 @@ COPY sglang-jax /root/sglang-jax
 # Bench scripts reference ~/venv-sgl/bin/python — shim to system python
 RUN mkdir -p /root/venv-sgl/bin && ln -s /usr/local/bin/python /root/venv-sgl/bin/python
 
+# 双内核：baseline = 上游 main（钉死）；final = submodule 最新（构建时快照）
+COPY kernels/baseline/ /root/kernels/baseline/
+RUN cp -r /root/sglang-jax/python/sgl_jax/srt/kernels/kda /root/kernels/final
+
 COPY bench/ /root/bench/
 COPY docker/reproduce.sh /root/reproduce.sh
 RUN chmod +x /root/reproduce.sh
