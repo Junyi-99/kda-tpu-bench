@@ -18,6 +18,11 @@ case "${KDA_KERNEL:-final}" in
     ;;
 esac
 
+# 解析后的配置全部打印，默认值也打印——日志里能看到实际跑的是什么，不用回头读源码
+echo ">>> config: KDA_KERNEL=${KDA_KERNEL:-final} MODEL=${MODEL:-<mode default>} PORT=${PORT:-30040} TP=${TP:-4}" \
+     "PALLAS_INTERPRET=${PALLAS_INTERPRET:-0} KDA_FORCE_BASELINE=${KDA_FORCE_BASELINE:-0}" \
+     "JAX_COMPILATION_CACHE_DIR=${JAX_COMPILATION_CACHE_DIR:-/root/jax_kernel_cache}"
+
 SG_URL="https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/192ab2185289094fc556ec8ce5ce1e8e587154ca/ShareGPT_V3_unfiltered_cleaned_split.json"
 
 collect() { [ -d /out ] && cp -f /root/kda_*.json /root/sharegpt_k3_lengths.json /out/ 2>/dev/null || true; }
@@ -114,7 +119,8 @@ PY
   shell) exec /bin/bash ;;
   *)
     cat <<'USAGE'
-Kimi K3 KDA TPU kernel benchmarks (SGLang-JAX, pinned jax==0.10.2, commit e1cd9ed7)
+Kimi K3 KDA TPU kernel benchmarks
+SGLang-JAX submodule 043ff29a | jax[tpu]==0.11.1 | libtpu==0.0.46 | xprof==2.23.1
 
 modes:
   correctness   开关组合正确性矩阵（无 TPU 可跑，PALLAS_INTERPRET=1）
@@ -128,6 +134,8 @@ modes:
   serve         只起官方 server（MODEL=kimi-linear-48b|mini-k3|mini-k3-half|<path>）
   bench-serving 官方 sgl_jax.bench_serving（起 server 后透传参数；MODEL= 同上）
   run-eval      官方 run_eval.py 正确性评测（默认 gsm8k 200 题）
+  all           correctness + micro + grid + extras + sharegpt
+  shell         进容器调试
 
 模型 preset（MODEL=）：
   kimi-linear-48b  真权重，从 GCS model-cache 拉取（~92GB -> /dev/shm）
@@ -135,11 +143,25 @@ modes:
   mini-k3-half     K3 几何 24 层（18 KDA + 6 MLA），dummy 权重
   <任意路径>       直接使用
 
-环境变量 KDA_KERNEL=baseline|final（默认 final）切换被测内核：
-  baseline = 上游 sglang-jax main 的原始 kernel（含已合并的 safe_gate MXU port）
-  final    = 本仓库 submodule 钉死的最新 commit（PR#4 全部结构优化）
-  all           以上全部
-  shell         进容器调试
+环境变量（建议每条命令都显式写全，包括默认值）：
+  KDA_KERNEL=final|baseline     默认 final。被测内核。
+                                final    = 本仓库 submodule 钉死的 commit（PR#4 全部优化）
+                                baseline = 上游 sglang-jax main 原始 kernel（含已合并的 safe_gate MXU port）
+  KDA_FORCE_BASELINE=0|1        默认 0。=1 时模型侧把 safe_gate/fuse/unified_layout/
+                                flat_grid/head_block 全部关掉（≡上游 4-stage 路径），
+                                gate 语义不变，用于同一构建内的 A/B。
+  MODEL=<preset|path>           serve / bench-serving 默认 mini-k3；run-eval 默认 kimi-linear-48b。
+  PALLAS_INTERPRET=0|1          默认 0（真硬件）。=1 走 Pallas 解释器，无 TPU 时才用，慢且会掩盖真硬件问题。
+  PORT=<int>                    默认 30040。server 端口。
+  TP=<int>                      默认 4。张量并行度——默认值要求 v6e-4，不是单芯。
+  SERVER_ARGS="<flags>"         默认空。透传给 launch_server，如 "--max-prefill-tokens 2048"。
+  MODELS_DIR=<path>             默认 /root/models。dummy preset 的 config 来源。
+  GCS_WEIGHTS=<gs://...>        默认 gs://medusa-experiments/model-cache/kimi-linear-48b。
+  JAX_COMPILATION_CACHE_DIR=<path>  默认 /root/jax_kernel_cache（镜像 ENV）。
+  E2E_MODEL / E2E_TAG / E2E_SERVER_ARGS   仅 e2e 模式。
+
+安全 gate 的实际取值不由环境变量决定：模型 config 声明 gate_lower_bound 时
+（Kimi-K3 类）走 safe_gate 快路径，无界 gate（如 Kimi-Linear-48B）保持 generic 路径。
 
 TPU VM 运行需要: --privileged --net=host
 结果 JSON 落 /root/，挂载 -v $(pwd)/out:/out 自动收集。

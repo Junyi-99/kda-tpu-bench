@@ -7,16 +7,37 @@ hermetically from this repo's contents — what you review is what runs.
 
 ## Quick start
 
+Every command below writes out **all environment variables that affect it**,
+including the ones already at their default — so what ran is readable from the
+command and the log, not inferred from the source.
+
 ```bash
-# run on a TPU v6e VM — FINAL kernel (this repo's pinned submodule, default)
-docker run --rm --privileged --net=host -v $(pwd)/out:/out \
+# run on a TPU v6e VM — FINAL kernel (this repo's pinned submodule)
+docker run --rm --privileged --net=host \
+  -e KDA_KERNEL=final \
+  -e JAX_COMPILATION_CACHE_DIR=/root/jax_kernel_cache \
+  -v $(pwd)/out:/out \
   ghcr.io/junyi-99/kda-tpu-bench:latest grid       # 56-point S×B grid × 3 impls
 
 # BASELINE kernel (upstream sglang-jax main, pinned e6e47830) — same modes
-docker run --rm --privileged --net=host -e KDA_KERNEL=baseline -v $(pwd)/out:/out \
+docker run --rm --privileged --net=host \
+  -e KDA_KERNEL=baseline \
+  -e JAX_COMPILATION_CACHE_DIR=/root/jax_kernel_cache \
+  -v $(pwd)/out:/out \
   ghcr.io/junyi-99/kda-tpu-bench:latest grid
-# other modes: correctness / micro / extras / sharegpt / lengths / all / shell
+
+# correctness matrix — the one mode that also runs without a TPU
+docker run --rm --privileged --net=host \
+  -e KDA_KERNEL=final \
+  -e PALLAS_INTERPRET=0 \
+  -v $(pwd)/out:/out \
+  ghcr.io/junyi-99/kda-tpu-bench:latest correctness   # PALLAS_INTERPRET=1 to run on CPU
+
+# other modes: micro / extras / sharegpt / lengths / all / shell
 ```
+
+`micro` / `grid` / `extras` / `sharegpt` force `PALLAS_INTERPRET=0` internally —
+they always run on real hardware, so passing it there would be misleading.
 
 `KDA_KERNEL=baseline|final` selects the kernel under test. Note: upstream main
 has already merged the safe_gate MXU port, so baseline-vs-final isolates the
@@ -35,30 +56,77 @@ takes a preset (`kimi-linear-48b`, `mini-k3`, `mini-k3-half`) or any path;
 presets prepare the model dir themselves (GCS weights for 48B, geometry-faithful
 dummy config for mini-K3).
 
+`TP=4` is the default and it means these commands need a **v6e-4**, not a single chip.
+
 ```bash
 # official bench_serving, sharegpt defaults (160 prompts / concurrency 32)
-docker run --rm --privileged --net=host -e MODEL=kimi-linear-48b \
+docker run --rm --privileged --net=host \
+  -e KDA_KERNEL=final \
+  -e KDA_FORCE_BASELINE=0 \
+  -e MODEL=kimi-linear-48b \
+  -e PORT=30040 \
+  -e TP=4 \
+  -e SERVER_ARGS= \
+  -e GCS_WEIGHTS=gs://medusa-experiments/model-cache/kimi-linear-48b \
+  -e JAX_COMPILATION_CACHE_DIR=/root/jax_kernel_cache \
   -v $(pwd)/out:/out ghcr.io/junyi-99/kda-tpu-bench:latest bench-serving
 
-# same, upstream KDA path — the A/B baseline
-docker run --rm --privileged --net=host -e MODEL=kimi-linear-48b \
-  -e KDA_FORCE_BASELINE=1 -v $(pwd)/out:/out \
-  ghcr.io/junyi-99/kda-tpu-bench:latest bench-serving
+# same, upstream KDA path — the A/B baseline (only KDA_FORCE_BASELINE differs)
+docker run --rm --privileged --net=host \
+  -e KDA_KERNEL=final \
+  -e KDA_FORCE_BASELINE=1 \
+  -e MODEL=kimi-linear-48b \
+  -e PORT=30040 \
+  -e TP=4 \
+  -e SERVER_ARGS= \
+  -e GCS_WEIGHTS=gs://medusa-experiments/model-cache/kimi-linear-48b \
+  -e JAX_COMPILATION_CACHE_DIR=/root/jax_kernel_cache \
+  -v $(pwd)/out:/out ghcr.io/junyi-99/kda-tpu-bench:latest bench-serving
 
 # any bench_serving flags pass straight through
-docker run --rm --privileged --net=host -e MODEL=mini-k3 \
+docker run --rm --privileged --net=host \
+  -e KDA_KERNEL=final \
+  -e KDA_FORCE_BASELINE=0 \
+  -e MODEL=mini-k3 \
+  -e PORT=30040 \
+  -e TP=4 \
+  -e SERVER_ARGS= \
+  -e MODELS_DIR=/root/models \
+  -e JAX_COMPILATION_CACHE_DIR=/root/jax_kernel_cache \
   -v $(pwd)/out:/out ghcr.io/junyi-99/kda-tpu-bench:latest \
   bench-serving --dataset-name random --random-input-len 4096 \
     --random-output-len 128 --num-prompts 64 --max-concurrency 16
 
 # correctness (official run_eval.py)
-docker run --rm --privileged --net=host -e MODEL=kimi-linear-48b \
-  -v $(pwd)/out:/out ghcr.io/junyi-99/kda-tpu-bench:latest run-eval
+docker run --rm --privileged --net=host \
+  -e KDA_KERNEL=final \
+  -e KDA_FORCE_BASELINE=0 \
+  -e MODEL=kimi-linear-48b \
+  -e PORT=30040 \
+  -e TP=4 \
+  -e SERVER_ARGS= \
+  -e GCS_WEIGHTS=gs://medusa-experiments/model-cache/kimi-linear-48b \
+  -e JAX_COMPILATION_CACHE_DIR=/root/jax_kernel_cache \
+  -v $(pwd)/out:/out ghcr.io/junyi-99/kda-tpu-bench:latest \
+  run-eval --eval-name gsm8k --num-examples 200
 
 # just the server, drive it yourself from the host
-docker run --rm --privileged --net=host -e MODEL=mini-k3 \
+docker run --rm --privileged --net=host \
+  -e KDA_KERNEL=final \
+  -e KDA_FORCE_BASELINE=0 \
+  -e MODEL=mini-k3 \
+  -e PORT=30040 \
+  -e TP=4 \
+  -e SERVER_ARGS= \
+  -e MODELS_DIR=/root/models \
+  -e JAX_COMPILATION_CACHE_DIR=/root/jax_kernel_cache \
   ghcr.io/junyi-99/kda-tpu-bench:latest serve
 ```
+
+Which KDA path a run takes is **not** an environment variable: the model's own
+config decides. A config that declares `gate_lower_bound` (Kimi-K3-class) takes
+the `safe_gate` path; an unbounded gate (Kimi-Linear-48B) keeps the generic one.
+`KDA_FORCE_BASELINE=1` turns every switch off on top of that, for A/B runs.
 
 Extra `launch_server` flags go in `SERVER_ARGS`, e.g.
 `-e SERVER_ARGS="--max-prefill-tokens 2048 --chunked-prefill-size 2048 --max-running-requests 32"`.
@@ -94,7 +162,8 @@ sglang-jax/   pinned kernel submodule
 
 ## Environment pins
 
-Python 3.12 · `jax[tpu]==0.11.1` · `libtpu==0.0.46` · `xprof==2.23.1` · BF16
+Python 3.12 · `jax[tpu]==0.11.1` · `libtpu==0.0.46` · `xprof==2.23.1` ·
+`sglang-jax` submodule `043ff29a` (branch `kda-fused-unified-neumann`) · BF16
 (fp32 accumulation in strip-GEMMs) · Kimi-K3 per-chip geometry
 `H=24, K=V=128, chunk=64, lower_bound=-5`.
 
