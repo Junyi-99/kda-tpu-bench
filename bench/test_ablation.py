@@ -5,7 +5,6 @@ Local: PALLAS_INTERPRET=1 python test_ablation.py
 TPU:   PALLAS_INTERPRET=0 python test_ablation.py
 """
 
-import importlib.util
 import os
 
 os.environ.setdefault("PALLAS_INTERPRET", "1")
@@ -16,14 +15,13 @@ import jax.numpy as jnp
 
 from naive import naive_recurrent_kda
 
-TREE = os.path.expanduser(
-    "~/claude/kimi-k3-kda/sglang-jax/python/sgl_jax/srt/kernels/kda/kda.py"
-)
-if not os.path.exists(TREE):
-    TREE = os.path.expanduser("~/sglang-jax/python/sgl_jax/srt/kernels/kda/kda.py")
-_spec = importlib.util.spec_from_file_location("kda_tree", TREE)
-kda = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(kda)
+import sys
+
+_SGL = next(p for p in (os.path.expanduser("~/sglang-jax/python"),
+                        os.path.expanduser("~/claude/kimi-k3-kda/sglang-jax/python"))
+            if os.path.isdir(p))
+sys.path.insert(0, _SGL)
+import sgl_jax.srt.kernels.kda.kda as kda
 
 LENS = [30, 130, 64, 210]
 H, K, V = 8, 32, 32  # H%8==0 使 head_block 路径可用

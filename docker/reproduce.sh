@@ -43,6 +43,18 @@ case "$MODE" in
     /root/reproduce.sh extras
     /root/reproduce.sh sharegpt
     ;;
+  selftest)
+    # CPU 冒烟：包导入 + 消融开关签名存在（无 TPU 依赖）
+    python - <<'PY'
+import sys, inspect
+sys.path.insert(0, "/root/sglang-jax/python")
+import sgl_jax.srt.kernels.kda.kda as kda
+sig = inspect.signature(kda.chunk_kda_fwd)
+for k in ("safe_gate", "fuse", "unified_layout", "flat_grid", "head_block"):
+    assert k in sig.parameters, f"missing switch: {k}"
+print("SELFTEST_OK: kda package import + ablation switches present")
+PY
+    ;;
   shell) exec /bin/bash ;;
   *)
     cat <<'USAGE'
@@ -55,6 +67,7 @@ modes:
   extras        state 等价性验证 + 双点消融阶梯（需 TPU）
   lengths       ShareGPT-derived 长度分布生成（CPU；下载 672MB 数据集）
   sharegpt      ShareGPT replay bench（需 TPU；自动先跑 lengths）
+  selftest      CPU 冒烟：kda 包导入 + 开关签名（CI 用）
   all           以上全部
   shell         进容器调试
 

@@ -36,3 +36,5 @@ jobs:
             ghcr.io/junyi-99/kda-tpu-bench:sha-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: selftest (CPU import smoke)
+        run: docker run --rm ghcr.io/junyi-99/kda-tpu-bench:sha-${{ github.sha }} selftest

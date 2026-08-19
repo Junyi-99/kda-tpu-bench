@@ -14,16 +14,18 @@ import json
 import os
 import sys
 import time
-import importlib.util
 
 import numpy as np
 import jax
 import jax.numpy as jnp
 
-TREE = os.path.expanduser("~/sglang-jax/python/sgl_jax/srt/kernels/kda/kda.py")
-_spec = importlib.util.spec_from_file_location("kda_tree", TREE)
-kda = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(kda)
+import sys
+
+_SGL = next(p for p in (os.path.expanduser("~/sglang-jax/python"),
+                        os.path.expanduser("~/claude/kimi-k3-kda/sglang-jax/python"))
+            if os.path.isdir(p))
+sys.path.insert(0, _SGL)
+import sgl_jax.srt.kernels.kda.kda as kda
 
 H, K, V, BT, LB = 24, 128, 128, 64, -5.0
 SCALE = K**-0.5
