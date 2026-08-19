@@ -1,0 +1,36 @@
+{
+ "root": {
+  "device_s": 43.001212658328,
+  "bf16_tflops_per_chip": 52.215632435296364,
+  "mxu_util_pct": 5.687977389465834,
+  "hbm_gbps_per_chip": 1117.7581166792352,
+  "hbm_util_pct": 68.15598272434362,
+  "idle_pct": 2.7802875795095923
+ },
+ "total_device_s": 42.911280503328,
+ "buckets_s": {
+  "moe_gemm": 13.22211340125,
+  "norm_residual_proj_other": 11.050222454577998,
+  "layout_reshape": 7.423126683749993,
+  "moe_dispatch_combine": 5.988458525,
+  "kda_target_kernel": 1.9569184375,
+  "communication": 1.074767005,
+  "mla": 0.9722788225,
+  "kda_decode_recurrence": 0.6789766924999999,
+  "kda_other": 0.4893729675,
+  "moe_routing": 0.05504551375
+ },
+ "buckets_pct": {
+  "moe_gemm": 30.8126750033119,
+  "moe_dispatch_combine": 13.955441214427434,
+  "kda_target_kernel": 4.560382292363031,
+  "norm_residual_proj_other": 25.75132302034425,
+  "layout_reshape": 17.29877691059415,
+  "communication": 2.504625805600571,
+  "kda_decode_recurrence": 1.5822801942424942,
+  "mla": 2.265788415296986,
+  "kda_other": 1.1404296533682943,
+  "moe_routing": 0.1282774904508639
+ },
+ "duty_cycle": "95.8%"
+}

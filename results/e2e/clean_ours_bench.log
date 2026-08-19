@@ -1,0 +1,45 @@
+Calling super().encode with {'add_special_tokens': False}
+Calling super().encode with {'add_special_tokens': False}
+Calling super().encode with {'add_special_tokens': False}
+Calling super().encode with {'add_special_tokens': False}
+Calling super().encode with {'add_special_tokens': False}
+
+============ Serving Benchmark Result ============
+Backend:                                 sgl-jax   
+Traffic request rate:                    inf       
+Max request concurrency:                 32        
+Successful requests:                     160       
+Benchmark duration (s):                  33.59     
+Total input tokens:                      54026     
+Total input text tokens:                 54026     
+Total generated tokens:                  34589     
+Total generated tokens (retokenized):    2354      
+Total cached tokens:                     0         
+Cache hit rate:                          0.0000    
+Request throughput (req/s):              4.76      
+Input token throughput (tok/s):          1608.50   
+Output token throughput (tok/s):         1029.81   
+Peak output token throughput (tok/s):    1965.00   
+Peak concurrent requests:                43        
+Total token throughput (tok/s):          2638.31   
+Concurrency:                             20.18     
+----------------End-to-End Latency----------------
+Mean E2E Latency (ms):                   4235.65   
+Median E2E Latency (ms):                 3247.96   
+P90 E2E Latency (ms):                    7891.62   
+P99 E2E Latency (ms):                    17558.00  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          1060.54   
+Median TTFT (ms):                        989.43    
+P99 TTFT (ms):                           2106.92   
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          16.68     
+Median TPOT (ms):                        15.44     
+P99 TPOT (ms):                           41.26     
+---------------Inter-Token Latency----------------
+Mean ITL (ms):                           14.76     
+Median ITL (ms):                         11.09     
+P95 ITL (ms):                            38.49     
+P99 ITL (ms):                            81.57     
+Max ITL (ms):                            614.24    
+==================================================

@@ -37,8 +37,11 @@ Results are written to `/root/*.json` inside the container and copied to
 | `lengths` | ShareGPT-derived length distribution (pinned revision, sha-verified) |
 | `sharegpt` | 7 B configs × 100 seed-0 replay batches × 3 impls |
 
-Protocol details and published results: see `docs/kda-benchmarks/` in the
-submodule and [PR #4](https://github.com/Junyi-99/sglang-jax/pull/4).
+| `e2e` | end-to-end serving A/B on a full model (`E2E_MODEL=<dir>`): ours vs `KDA_FORCE_BASELINE=1` |
+
+Published results: kernel-level in `results/`, full-model serving (Kimi-Linear-48B
+and mini-K3, with trace attribution) in [`results/e2e/`](results/e2e/README.md),
+and the write-up in [PR #4](https://github.com/Junyi-99/sglang-jax/pull/4).
 
 ## Layout
 

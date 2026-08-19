@@ -72,6 +72,12 @@ for k in need:
 print(f"SELFTEST_OK: kernel={os.environ.get('KDA_KERNEL','final')}, switches verified: {need}")
 PY
     ;;
+  e2e)
+    # 端到端 serving A/B（需真/dummy 模型目录，通过 E2E_MODEL 指定）
+    : "${E2E_MODEL:?set E2E_MODEL=/path/to/model-dir}"
+    PY=$PY SGL=/root/sglang-jax bash /root/bench/e2e_serving.sh "$E2E_MODEL" "${E2E_TAG:-run}" $E2E_SERVER_ARGS
+    collect
+    ;;
   shell) exec /bin/bash ;;
   *)
     cat <<'USAGE'
@@ -85,6 +91,7 @@ modes:
   lengths       ShareGPT-derived 长度分布生成（CPU；下载 672MB 数据集）
   sharegpt      ShareGPT replay bench（需 TPU；自动先跑 lengths）
   selftest      CPU 冒烟：kda 包导入 + 开关签名（CI 用）
+  e2e           端到端 serving A/B（E2E_MODEL=模型目录；ours vs KDA_FORCE_BASELINE=1）
 
 环境变量 KDA_KERNEL=baseline|final（默认 final）切换被测内核：
   baseline = 上游 sglang-jax main 的原始 kernel（含已合并的 safe_gate MXU port）
