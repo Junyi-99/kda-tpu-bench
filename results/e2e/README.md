@@ -6,6 +6,13 @@ Both sides are the **same build**; the baseline side sets
 `KDA_FORCE_BASELINE=1` so every ablation switch is off (== upstream 4-stage
 path). Reproduce with `bench/e2e_serving.sh <model-dir> <tag>`.
 
+> **Provenance.** These runs predate submodule commit `043ff29a`. Between them
+> and the pin that shipped afterwards (`d88ed081`), the backend no longer read
+> `KDA_FORCE_BASELINE` and no longer threaded `gate_lower_bound` into the
+> kernel, so an image built from that pin would have compared a config against
+> itself. `043ff29a` restores both. Reproduce only with a pin at `043ff29a` or
+> later; on an image built from `d88ed081` these numbers do not reproduce.
+
 ## Kimi-Linear-48B (real weights) — unbounded gate
 
 `safe_gate` / `head_block` do not apply (finite-Neumann solve is only
