@@ -141,6 +141,7 @@ Extra `launch_server` flags go in `SERVER_ARGS`, e.g.
 | `extras` | zero/non-zero initial_state equivalence + 6-rung ablation ladders |
 | `lengths` | ShareGPT-derived length distribution (pinned revision, sha-verified) |
 | `sharegpt` | 7 B configs × 100 seed-0 replay batches × 3 impls |
+| `llo` | pallas-internal attribution: per-unit instruction mix + MXU/VPU hardware counters + figure |
 
 | `e2e` | end-to-end serving A/B on a full model (`E2E_MODEL=<dir>`): ours vs `KDA_FORCE_BASELINE=1` |
 | `bench-serving` | official `sgl_jax.bench_serving` against a `MODEL=` preset or path |

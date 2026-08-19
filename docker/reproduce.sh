@@ -56,6 +56,29 @@ case "$MODE" in
     PALLAS_INTERPRET=0 $PY /root/bench/bench_kda_sharegpt.py /root/sharegpt_k3_lengths.json /root/kda_sharegpt.json
     collect
     ;;
+  llo)
+    # Pallas 内部归因：三实现各采一条插桩 trace，解析出指令构成 + 硬件计数器，出对比图。
+    # 新 flag 名需要 libtpu >= 0.0.46；旧运行时只认 legacy 名（见 bench/llo/capture_llo.py）。
+    # 插桩只用于归因——计时数字一律取未插桩的 micro/grid。
+    LLO_FLAGS="--xla_xprof_enable_custom_call_tracing=true --xla_xprof_register_llo_debug_info=true --xla_enable_mxu_trace=true --xla_enable_local_dma_trace=true"
+    MIX_S=${LLO_MIX_S:-1024}; MIX_B=${LLO_MIX_B:-8}     # 指令构成：大形状，三侧同窗口
+    CTR_S=${LLO_CTR_S:-64};   CTR_B=${LLO_CTR_B:-1}     # 计数器：小形状，采样才够密
+    MIX_JSON=""; CTR_JSON=""
+    for impl in original mxu_port optimized; do
+      for kind in mix ctr; do
+        [ "$kind" = mix ] && { S=$MIX_S; B=$MIX_B; IT=3; } || { S=$CTR_S; B=$CTR_B; IT=1; }
+        LIBTPU_INIT_ARGS="$LLO_FLAGS" PALLAS_INTERPRET=0 \
+          $PY /root/bench/llo/capture_llo.py /root/llo_${kind}_${impl} $impl $IT $S $B
+        $PY /root/bench/llo/analyze_llo.py /root/llo_${kind}_${impl} $impl /root/kda_llo_${kind}_${impl}.json
+        rm -rf /root/llo_${kind}_${impl}          # trace 本体动辄 GB，解析完即弃
+      done
+      MIX_JSON="$MIX_JSON /root/kda_llo_mix_${impl}.json"
+      CTR_JSON="$CTR_JSON /root/kda_llo_ctr_${impl}.json"
+    done
+    $PY /root/bench/llo/plot_units.py /root/kda_llo_units.png $MIX_JSON -- $CTR_JSON
+    [ -d /out ] && cp -f /root/kda_llo_units.png /out/ 2>/dev/null
+    collect
+    ;;
   all)
     /root/reproduce.sh correctness
     /root/reproduce.sh micro
@@ -129,6 +152,8 @@ modes:
   extras        state 等价性验证 + 双点消融阶梯（需 TPU）
   lengths       ShareGPT-derived 长度分布生成（CPU；下载 672MB 数据集）
   sharegpt      ShareGPT replay bench（需 TPU；自动先跑 lengths）
+  llo           Pallas 内部归因（需 TPU）：指令构成 + MXU/VPU 硬件计数器 + 对比图
+                形状可调：LLO_MIX_S/LLO_MIX_B（构成，默认 1024×8）、LLO_CTR_S/LLO_CTR_B（计数器，默认 64×1）
   selftest      CPU 冒烟：kda 包导入 + 开关签名（CI 用）
   e2e           端到端 serving A/B（E2E_MODEL=模型目录；ours vs KDA_FORCE_BASELINE=1）
   serve         只起官方 server（MODEL=kimi-linear-48b|mini-k3|mini-k3-half|<path>）

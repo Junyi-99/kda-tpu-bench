@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Pinned JAX TPU stack
 RUN pip install --no-cache-dir "jax[tpu]==0.11.1" "libtpu==0.0.46" "xprof==2.23.1" \
         -f https://storage.googleapis.com/jax-releases/libtpu_releases.html && \
-    pip install --no-cache-dir transformers tiktoken blobfile
+    pip install --no-cache-dir transformers tiktoken blobfile matplotlib
 
 # Kernel + integration from the reviewed submodule (hermetic)
 COPY sglang-jax /root/sglang-jax
