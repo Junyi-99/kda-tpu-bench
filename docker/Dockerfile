@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Pinned JAX TPU stack
-RUN pip install --no-cache-dir "jax[tpu]==0.10.2" \
+RUN pip install --no-cache-dir "jax[tpu]==0.11.1" "libtpu==0.0.46" "xprof==2.23.1" \
         -f https://storage.googleapis.com/jax-releases/libtpu_releases.html && \
     pip install --no-cache-dir transformers tiktoken blobfile
 

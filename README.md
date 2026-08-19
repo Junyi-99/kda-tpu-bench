@@ -51,8 +51,13 @@ sglang-jax/   pinned kernel submodule
 
 ## Environment pins
 
-Python 3.12 · `jax[tpu]==0.10.2` · BF16 (fp32 accumulation in strip-GEMMs) ·
-Kimi-K3 per-chip geometry `H=24, K=V=128, chunk=64, lower_bound=-5`.
+Python 3.12 · `jax[tpu]==0.11.1` · `libtpu==0.0.46` · `xprof==2.23.1` · BF16
+(fp32 accumulation in strip-GEMMs) · Kimi-K3 per-chip geometry
+`H=24, K=V=128, chunk=64, lower_bound=-5`.
+
+Previously pinned to `jax[tpu]==0.10.2` / `libtpu==0.0.42.1`; kernel latency is
+unchanged across the bump (per-shape medians within run-to-run noise, e.g.
+prefill T=8192: 3.899 → 3.874 ms; decode B=32: 0.2464 → 0.2489 ms).
 
 > Validated on TPU v6e: in-container benchmark results match native (non-Docker)
 > runs within measurement noise — the container adds no measurable overhead.

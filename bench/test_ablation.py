@@ -13,14 +13,13 @@ import numpy as np
 import jax
 import jax.numpy as jnp
 
-from naive import naive_recurrent_kda
-
 import sys
 
 _SGL = next(p for p in (os.path.expanduser("~/sglang-jax/python"),
                         os.path.expanduser("~/claude/kimi-k3-kda/sglang-jax/python"))
             if os.path.isdir(p))
 sys.path.insert(0, _SGL)
+from sgl_jax.srt.kernels.kda.naive import naive_recurrent_kda
 import sgl_jax.srt.kernels.kda.kda as kda
 import inspect as _insp
 _SUP = set(_insp.signature(kda.chunk_kda_fwd).parameters)
