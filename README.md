@@ -8,14 +8,10 @@ hermetically from this repo's contents — what you review is what runs.
 ## Quick start
 
 ```bash
-# correctness matrix in Pallas interpret mode — no TPU needed, but requires a
-# real x86-64 host with AVX (jaxlib does not start under Apple-Silicon emulation)
-docker run --rm ghcr.io/junyi-99/kda-tpu-bench:latest correctness
-
-# on a TPU v6e VM
+# run on a TPU v6e VM
 docker run --rm --privileged --net=host -v $(pwd)/out:/out \
   ghcr.io/junyi-99/kda-tpu-bench:latest grid       # 56-point S×B grid × 3 impls
-# other modes: micro / extras / sharegpt / lengths / all / shell
+# other modes: correctness / micro / extras / sharegpt / lengths / all / shell
 ```
 
 Results are written to `/root/*.json` inside the container and copied to
