@@ -31,3 +31,6 @@ ENV JAX_COMPILATION_CACHE_DIR=/root/jax_kernel_cache
 WORKDIR /root
 ENTRYPOINT ["/root/reproduce.sh"]
 CMD ["help"]
+
+# Published results shipped in-image
+COPY results/ /root/results/
