@@ -1,0 +1,51 @@
+Traceback (most recent call last):
+  File "/root/pc.py", line 26, in <module>
+### optimized
+counter         metric          n      mean       p90       max  nonzero%
+MXU             % util         15     10.56     22.64     22.64      46.7
+    MXU busy-sample mean=22.64% n_busy=7
+Scalar ALU      % util         38     23.20     50.00     50.00     100.0
+Vector ALU      % util         15     39.44     84.52     84.52      46.7
+Vector EUP      % util         15      3.75      8.04      8.04      46.7
+Vector Fills    fills          15  12755.87  27334.00  27334.00      46.7
+Vector Load     % util         38     17.80     61.63     61.63     100.0
+Vector Spills   spills         15   6459.13  13841.00  13841.00      46.7
+Vector Store    % util         15     15.97     34.22     34.22      46.7
+XLU             % util         15      5.95     12.75     12.75      46.7
+    nz = sum(1 for x in xs if x > 0) / len(xs) * 100
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+ZeroDivisionError: division by zero
+### mxu_port
+counter         metric          n      mean       p90       max  nonzero%
+MXU             % util        474      6.19     12.22     12.41      50.6
+    MXU busy-sample mean=12.22% n_busy=240
+Scalar ALU      % util       1931     55.69     83.33     83.33      99.8
+Vector ALU      % util        633     18.32     91.00     91.00      54.7
+Vector EUP      % util        474      1.40      2.76      2.80      50.6
+Vector Fills    fills         474     11.14     22.00     22.00      50.6
+Vector Load     % util       1931      9.54     14.81     54.17      99.8
+Vector Spills   spills        474     11.14     22.00     22.00      50.6
+Vector Store    % util        735      9.38     22.90     80.00      54.0
+XLU             % util        474      4.79      9.46      9.60      50.6
+Traceback (most recent call last):
+  File "/root/pc.py", line 26, in <module>
+    nz = sum(1 for x in xs if x > 0) / len(xs) * 100
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+ZeroDivisionError: division by zero
+Traceback (most recent call last):
+  File "/root/pc.py", line 26, in <module>
+    nz = sum(1 for x in xs if x > 0) / len(xs) * 100
+### original
+counter         metric          n      mean       p90       max  nonzero%
+MXU             % util          1      0.00      0.00      0.00       0.0
+Scalar ALU      % util        530     42.18     70.00     70.00      99.6
+Vector ALU      % util        160     60.29     91.00     91.00      66.2
+Vector EUP      % util          1      0.00      0.00      0.00       0.0
+Vector Fills    fills           1      0.00      0.00      0.00       0.0
+Vector Load     % util        530     14.81     17.60     54.17      99.6
+Vector Spills   spills          1      0.00      0.00      0.00       0.0
+Vector Store    % util        262     24.84     80.00     80.00      59.9
+XLU             % util          1      0.00      0.00      0.00       0.0
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+ZeroDivisionError: division by zero
+CTR2_DONE

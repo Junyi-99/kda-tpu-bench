@@ -1,0 +1,33 @@
+### original: 1000095 events, 18 lanes
+  /device:TPU:0 / VALU Instructions                          n=351741   vadd.f32(122530), vsel(78977), vrot.slane(76078), vmul.f32(46064)
+  /device:TPU:0 / Source code                                n=310259   /root/sglang-jax/python/sgl_jax/srt/kernels/kda/kda.py:158(84760), /root/sglang-jax/python/sgl_jax/srt/kernels/kda/kda.py:159(75718), /root/sglang-jax
+  /device:TPU:0 / Pallas Primitives                          n=45351    get.1(9792), concatenate.1(8568), add.1(5712), mul.1(4847)
+  /device:TPU:0 / VST Instructions                           n=42395    vst(42298), vst.msk(97)
+  /device:TPU:0 / VLD Instructions                           n=40705    vld(40705)
+  /device:TPU:0 / XLU Instructions                           n=38896    vpop.permute(14142), vbcast.lane(8694), vpop.xlane(5529), vadd.xlane.f32(5392)
+  /device:TPU:0 / SALU Instructions                          n=6877     smov(2248), sshll.u32(809), sld(683), scmp(586)
+  /device:TPU:0 / EUP Instructions                           n=3552     vpow2.f32(3552)
+  /device:TPU:0 / MXU1 Instructions                          n=2991     vpop(952), vmatmul.mubr.msk(468), vmatprep.subr(422), vmatpush3(312)
+  /device:TPU:0 / MXU0 Instructions                          n=2967     vpop(949), vmatmul.mubr.msk(453), vmatprep.subr(388), vmatpush3(286)
+### mxu_port: 1000097 events, 38 lanes
+  /device:TPU:0 / VALU Instructions                          n=329115   vadd.f32(130205), vsel(77528), vrot.slane(69964), vmul.f32(33093)
+  /device:TPU:0 / Source code                                n=308334   /root/sglang-jax/python/sgl_jax/srt/kernels/kda/kda.py:158(81712), /root/sglang-jax/python/sgl_jax/srt/kernels/kda/kda.py:159(76128), /root/sglang-jax
+  /device:TPU:0 / Pallas Primitives                          n=38235    get.1(9792), concatenate.1(8958), add.1(5712), mul.1(4272)
+  /device:TPU:0 / VST Instructions                           n=29361    vst(28394), vst.msk(967)
+  /device:TPU:0 / MXU1 Instructions                          n=28518    vpop(7969), vmatprep.subr(6362), vmatpush3(6362), vmatprep.mubr.msk(2785)
+  /device:TPU:0 / VLD Instructions                           n=24740    vld(24740)
+  /device:TPU:0 / MXU0 Instructions                          n=23126    vpop(8024), vmatprep.mubr(3928), vmatprep.subr(3621), vmatpush1(3101)
+  /device:TPU:0 / SALU Instructions                          n=18911    smov(3357), scalar_lea(3230), scmp(2549), sshll.u32(1871)
+  /device:TPU:0 / XLU Instructions                           n=12163    vpop.permute(6139), vrot.lane(4854), vperm(520), vbcast.lane(520)
+  /device:TPU:0 / EUP Instructions                           n=3632     vpow2.f32(3632)
+### optimized: 1000053 events, 18 lanes
+  /device:TPU:0 / VALU Instructions                          n=447071   vsel(141970), vrot.slane(126785), vmmov(50947), vmul.f32(23679)
+  /device:TPU:0 / VLD Instructions                           n=160531   vld(160531)
+  /device:TPU:0 / Source code                                n=103596   /root/sglang-jax/python/sgl_jax/srt/kernels/kda/v2/head_block.py:109(19123), /root/sglang-jax/python/sgl_jax/srt/kernels/kda/v2/head_block.py:133(1770
+  /device:TPU:0 / VST Instructions                           n=78836    vst(77876), vst.msk(960)
+  /device:TPU:0 / MXU0 Instructions                          n=38571    vpop(12745), vmatprep.subr(6484), vmatprep.mubr(5229), vmatmul.mubr.msk(4124)
+  /device:TPU:0 / MXU1 Instructions                          n=38548    vpop(12736), vmatprep.subr(6481), vmatprep.mubr(5226), vmatmul.mubr.msk(4120)
+  /device:TPU:0 / Pallas Primitives                          n=23186    dot_general.5(3575), add.3(2476), mul.6(2311), mul.5(2281)
+  /device:TPU:0 / XLU Instructions                           n=14972    vpop.permute(7431), vrot.lane(6329), vperm(1152), vbcast.lane(48)
+  /device:TPU:0 / EUP Instructions                           n=10218    vpow2.f32(9066), vrcp.f32(1152)
+  /device:TPU:0 / SALU Instructions                          n=1439     scalar_lea(326), scmp(262), pnand(153), smov(124)

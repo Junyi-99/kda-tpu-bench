@@ -1,0 +1,71 @@
+  File "/root/pc.py", line 26, in <module>
+### optimized
+counter         metric          n      mean       p90       max  nonzero%
+MXU             % util         29     23.87     42.07     42.07      65.5
+    MXU busy-sample mean=36.43% n_busy=19
+Scalar ALU      % util         71     26.43     70.59     76.47      98.6
+Vector ALU      % util         29     51.27     84.52     84.52      65.5
+Vector EUP      % util         29      2.07      8.04      8.04      65.5
+Vector Fills    fills          29  11893.31  27334.00  27334.00      65.5
+Vector Load     % util         71     21.59     61.27     61.63      98.6
+Vector Spills   spills         29   6625.48  13841.00  13841.00      65.5
+Vector Store    % util         32     29.10     35.51     91.43      68.8
+XLU             % util         29      8.69     13.67     13.67      65.5
+### optimized: total_events=1000053 truncated=YES
+  VALU Instructions      n=395689   vsel:99817, vrot.slane:89577, vmmov:53784, vadd.f32:27368, vperm.slane:22404, vcombine.high:22257, vmul.f32:18532, vsub.f32:16448
+  VLD Instructions       n=137077   vld:137077
+  VST Instructions       n=81642    vst:80702, vst.msk:940
+  MXU1 Instructions      n=48876    vpop:13151, vmatprep.subr:11355, vmatpush3:8569, vmatprep.mubr:5352, vmatmul.mubr.msk:3885, vmatpush1:2770, vmatmul.mubr:2624, vmatprep.mubr.msk:1170
+  MXU0 Instructions      n=48472    vpop:13063, vmatprep.subr:11346, vmatpush3:8447, vmatprep.mubr:5268, vmatmul.mubr.msk:3880, vmatpush1:2790, vmatmul.mubr:2508, vmatprep.mubr.msk:1170
+  Pallas Primitives      n=23292    dot_general.5:3375, add.3:2435, select_n.1:1943, mul.7:1260, dot_general.1:1203, mul.11:1150, mul.6:1119, mul.5:1045
+  XLU Instructions       n=11978    vpop.permute:5435, vrot.lane:3764, vbcast.lane:979, vpop.trf:720, vperm:669, vxpose:401, vset.pattern.permute:10
+  EUP Instructions       n=7488     vpow2.f32:6144, vrcp.f32:1344
+  _counters_             n=348      Scalar ALU:71, Vector Load:71, Vector Store:32, Vector Fills:29, MXU:29, Vector Spills:29, Vector ALU:29, XLU:29
+  SALU Instructions      n=45       scalar_lea:13, sld:10, pneg:4, smov:4, pnand:3, scmp:3, smul.u32:2, por:2
+### original
+counter         metric          n      mean       p90       max  nonzero%
+MXU             % util          1      0.00      0.00      0.00       0.0
+Scalar ALU      % util        170     42.09     70.00     70.00      98.8
+Vector ALU      % util         52     59.50     91.00     91.00      65.4
+Vector EUP      % util          1      0.00      0.00      0.00       0.0
+Vector Fills    fills           1      0.00      0.00      0.00       0.0
+Vector Load     % util        170     14.37     17.60     54.17      98.8
+Vector Spills   spills          1      0.00      0.00      0.00       0.0
+Vector Store    % util         82     24.13     80.00     80.00      59.8
+XLU             % util          1      0.00      0.00      0.00       0.0
+  File "/root/pc.py", line 26, in <module>
+### original: total_events=1000053 truncated=YES
+  VALU Instructions      n=246320   vmul.f32:85441, vsel:35115, vrot.slane:27383, vunpack:14131, vcmp:13478, vpop.eup:13337, vsub.f32:12811, vmax.f32:12609
+  XLU Instructions       n=149425   vpop.permute:55025, vbcast.lane:32556, vperm:21349, vpop.xlane:20333, vadd.xlane.f32:20162
+  VLD Instructions       n=79619    vld:79619
+  VST Instructions       n=68949    vst:68618, vst.msk:331
+  Pallas Primitives      n=44069    select_n.1:9309, convert_element_type.3:5520, mul.8:3907, mul.6:2640, mul.1:2510, broadcast_in_dim.1:2397, mul.3:2280, gt.1:2055
+  EUP Instructions       n=12659    vpow2.f32:12659
+  SALU Instructions      n=2019     scalar_lea:438, scmp:332, sshll.u32:257, smov:211, pnand:210, int_to_ptr:120, por:90, pneg:90
+  MXU0 Instructions      n=1930     vpop:544, vmatmul.mubr.msk:453, vmatpush3:240, vmatprep.subr:211, vmatprep.mubr:150, vmatprep.subr.msk:122, vmatpush1:120, vmatprep.mubr.msk:90
+  MXU1 Instructions      n=1925     vpop:592, vmatmul.mubr.msk:483, vmatprep.subr:273, vmatpush3:182, vmatprep.mubr.msk:120, vmatprep.subr.msk:120, vmatprep.mubr:95, vmatpush1:60
+  _counters_             n=479      Vector Load:170, Scalar ALU:170, Vector Store:82, Vector ALU:52, XLU:1, Vector EUP:1, MXU:1, Vector Fills:1
+  File "/root/pc.py", line 26, in <module>
+### mxu_port
+counter         metric          n      mean       p90       max  nonzero%
+MXU             % util        753      9.36     18.95     21.79      56.0
+    MXU busy-sample mean=16.70% n_busy=422
+Scalar ALU      % util       1973     47.07     83.75     86.11      96.8
+Vector ALU      % util        804     10.24     16.38     91.00      56.7
+Vector EUP      % util        753      0.61      2.76      2.80      56.0
+Vector Fills    fills         753     21.99     45.00     45.00      56.0
+Vector Load     % util       1973      8.63     17.69     54.17      99.8
+Vector Spills   spills       1113     15.69     45.00     45.00      59.5
+Vector Store    % util       1289      9.30     22.90     80.00      62.5
+XLU             % util        753      4.21      9.47      9.60      56.0
+### mxu_port: total_events=525123 truncated=NO
+  VALU Instructions      n=92325    vsel:21296, vmul.f32:18856, vand.u32:9017, vsub.f32:8816, vadd.f32:7187, vcmp:6872, vrot.slane:5094, vpop.eup:5063
+  XLU Instructions       n=32398    vpop.permute:17232, vrot.lane:12215, vbcast.lane:1573, vxpose:694, vpop.trf:684
+  MXU1 Instructions      n=30546    vmatpush3:8746, vmatprep.subr:8023, vpop:5111, vmatprep.mubr:3205, vmatmul.mubr:3108, vmatprep.mubr.msk:1298, vmatmul.mubr.msk:1055
+  MXU0 Instructions      n=27483    vmatprep.subr:6932, vmatpush3:6310, vpop:5071, vmatprep.mubr:4086, vmatmul.mubr:2548, vmatmul.mubr.msk:1278, vmatpush1:1246, vmatprep.mubr.msk:12
+  SALU Instructions      n=13412    scalar_lea:3038, scmp:1817, smov:1581, sshll.u32:1555, pnand:1481, pneg:879, sadd.s32:673, por:535
+  VLD Instructions       n=11549    vld:11549
+  VST Instructions       n=10386    vst:9221, vst.msk:1165
+  Pallas Primitives      n=10301    convert_element_type.6:1152, convert_element_type.7:1152, dot_general.3:989, concatenate.1:724, mul.3:724, dot_general.1:662, mul.2:626, concatenate.2:575
+  _counters_             n=10164    Vector Load:1973, Scalar ALU:1973, Vector Store:1289, Vector Spills:1113, Vector ALU:804, MXU:753, XLU:753, Vector EUP:753
+  EUP Instructions       n=3572     vpow2.f32:3572
