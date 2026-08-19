@@ -60,14 +60,21 @@ case "$MODE" in
     # Pallas 内部归因：三实现各采一条插桩 trace，解析出指令构成 + 硬件计数器，出对比图。
     # 新 flag 名需要 libtpu >= 0.0.46；旧运行时只认 legacy 名（见 bench/llo/capture_llo.py）。
     # 插桩只用于归因——计时数字一律取未插桩的 micro/grid。
-    LLO_FLAGS="--xla_xprof_enable_custom_call_tracing=true --xla_xprof_register_llo_debug_info=true --xla_enable_mxu_trace=true --xla_enable_local_dma_trace=true"
+    # 两轮的 flag 不同，且必须不同：
+    #   mix — 只开 custom-call tracing + LLO 源码归因。多开 mxu/dma trace 会把 DMA、
+    #         counter 事件塞进同一个 1M 事件预算，把靠后的指令事件挤出窗口，占比就不可比了。
+    #   ctr — 额外开 mxu/dma trace 和 legacy 的 custom_call_region_trace；最后这个才是
+    #         让 _counters_ 采样变密的开关（少了它每类计数器只有 2-5 个采样点，全是 0）。
+    MIX_FLAGS="--xla_xprof_enable_custom_call_tracing=true --xla_xprof_register_llo_debug_info=true"
+    CTR_FLAGS="$MIX_FLAGS --xla_enable_mxu_trace=true --xla_enable_local_dma_trace=true --xla_enable_custom_call_region_trace=true"
     MIX_S=${LLO_MIX_S:-1024}; MIX_B=${LLO_MIX_B:-8}     # 指令构成：大形状，三侧同窗口
     CTR_S=${LLO_CTR_S:-64};   CTR_B=${LLO_CTR_B:-1}     # 计数器：小形状，采样才够密
     MIX_JSON=""; CTR_JSON=""
     for impl in original mxu_port optimized; do
       for kind in mix ctr; do
-        [ "$kind" = mix ] && { S=$MIX_S; B=$MIX_B; IT=3; } || { S=$CTR_S; B=$CTR_B; IT=1; }
-        LIBTPU_INIT_ARGS="$LLO_FLAGS" PALLAS_INTERPRET=0 \
+        [ "$kind" = mix ] && { S=$MIX_S; B=$MIX_B; IT=3; FLAGS=$MIX_FLAGS; } \
+                          || { S=$CTR_S; B=$CTR_B; IT=1; FLAGS=$CTR_FLAGS; }
+        LIBTPU_INIT_ARGS="$FLAGS" PALLAS_INTERPRET=0 \
           $PY /root/bench/llo/capture_llo.py /root/llo_${kind}_${impl} $impl $IT $S $B
         $PY /root/bench/llo/analyze_llo.py /root/llo_${kind}_${impl} $impl /root/kda_llo_${kind}_${impl}.json
         rm -rf /root/llo_${kind}_${impl}          # trace 本体动辄 GB，解析完即弃

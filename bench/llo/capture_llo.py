@@ -3,13 +3,23 @@
 XProf can open up a pallas custom call when libtpu is told to trace it:
 
     LIBTPU_INIT_ARGS="--xla_xprof_enable_custom_call_tracing=true \
-                      --xla_xprof_register_llo_debug_info=true \
-                      --xla_enable_mxu_trace=true"
+                      --xla_xprof_register_llo_debug_info=true"
 
-Those flag names need libtpu >= 0.0.46; older runtimes only know the legacy
-names (xla_enable_custom_call_region_trace / xla_enable_mxu_trace /
+Those two flag names need libtpu >= 0.0.46; older runtimes only know the
+legacy names (xla_enable_custom_call_region_trace / xla_enable_mxu_trace /
 xla_enable_local_dma_trace). Without any of them the trace stops at the
 custom-call boundary — one opaque box, no units inside.
+
+Which flags you add matters, and reproduce.sh's `llo` mode splits the run in
+two because of it:
+
+  instruction mix — the two flags above and nothing else. Adding mxu/dma trace
+    spends the same 1M-event budget on DMA and counter events, pushing later
+    instruction events out of the window and skewing the shares.
+  hardware counters — add --xla_enable_mxu_trace, --xla_enable_local_dma_trace
+    and legacy --xla_enable_custom_call_region_trace. That last one is what
+    makes _counters_ sample densely; without it each counter gets 2-5 samples,
+    all zero.
 
 Usage: capture_llo.py <logdir> <impl> <iters> <S> <B>
   impl: original | mxu_port | optimized
